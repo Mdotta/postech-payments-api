@@ -1,6 +1,8 @@
 namespace Postech.Payments.Api.Domain.Enums;
 
-public class PaymentStatus
+public enum PaymentStatus
 {
-    
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2
 }

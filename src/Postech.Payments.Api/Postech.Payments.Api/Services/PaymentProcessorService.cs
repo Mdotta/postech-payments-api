@@ -1,6 +1,6 @@
 namespace Postech.Payments.Api.Services;
 
-public class PaymentProcessorService
+public class PaymentProcessorService:IPaymentProcessor
 {
     
 }
