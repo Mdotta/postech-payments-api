@@ -1,7 +1,22 @@
-using Postech.Payments.Api;
+using Postech.Payments.Api.Extensions;
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+var builder = WebApplication.CreateBuilder(args);
 
-var host = builder.Build();
-host.Run();
+builder.Services.AddOpenApi();
+
+builder.Services.AddHealthChecks();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplicationServices();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+
+app.UseHttpsRedirection();
+
+app.Run();
