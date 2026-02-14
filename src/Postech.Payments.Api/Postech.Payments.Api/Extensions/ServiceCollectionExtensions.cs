@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Postech.Payments.Api.Application.Services;
 using Postech.Payments.Api.Infrastructure.Data;
 using Postech.Payments.Api.Infrastructure.Messaging;
+using Postech.Payments.Api.Infrastructure.Repositories;
 
 namespace Postech.Payments.Api.Extensions;
 
@@ -8,12 +10,12 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped<IPaymentService, PaymentService>();
         return services;
     }
 
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Database
         var connectionString = configuration.GetConnectionString("DefaultConnection")
                                ?? throw new InvalidOperationException("Database connection string is not configured");
 
@@ -28,13 +30,9 @@ public static class ServiceCollectionExtensions
             });
         });
 
-        // Repositories
-        // services.AddScoped<IPaymentRepository, PaymentRepository>();
-
-        // Messaging
-        services.AddScoped<IEventConsumer, RabbitMqEventConsumer>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IMessagePublisher, MessagePublisher>();
 
         return services;
     }
-    
 }
