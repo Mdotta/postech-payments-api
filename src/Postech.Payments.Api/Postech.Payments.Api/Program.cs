@@ -1,4 +1,6 @@
 using Postech.Payments.Api.Extensions;
+using Postech.Payments.Api.Infrastructure.Data;
+using Postech.Payments.Api.Infrastructure.MassTransit;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +27,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddMassTransitServices(builder.Configuration);
+builder.Services.AddEfCoreDatabase(builder.Configuration);
 builder.Services.AddApplicationServices();
 
 var app = builder.Build();

@@ -1,5 +1,7 @@
 using MassTransit;
 using Postech.Payments.Api.Application.Consumers;
+using Postech.Payments.Api.Domain.Events;
+using Postech.Payments.Api.Infrastructure.Messaging;
 
 namespace Postech.Payments.Api.Infrastructure.MassTransit;
 
@@ -19,16 +21,25 @@ public static class MassTransitConfig
             
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(rabbitMqHost,rabbitMqPort,rabbitMqVHost, h =>
+                cfg.Host(rabbitMqHost, rabbitMqPort, rabbitMqVHost, h =>
                 {
                     h.Username(rabbitMqUser);
                     h.Password(rabbitMqPass);
+                    
+                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
+                    h.Heartbeat(TimeSpan.FromSeconds(10));
                 });
+                
+                cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                cfg.PrefetchCount = 16;
+                
+                cfg.Message<PaymentProcessedEvent>(e => e.SetEntityName("payment-processed"));
                 
                 cfg.ConfigureEndpoints(context);
             });
         });
         
+        services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
         
         return services;
     }
