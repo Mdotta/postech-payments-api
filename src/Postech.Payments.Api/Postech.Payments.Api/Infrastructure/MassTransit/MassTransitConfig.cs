@@ -1,3 +1,4 @@
+using System.Reflection;
 using MassTransit;
 using Postech.Payments.Api.Application.Consumers;
 using Postech.Payments.Api.Domain.Events;
@@ -17,7 +18,8 @@ public static class MassTransitConfig
         
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<OrderCreatedConsumer>();
+            var assembly = Assembly.GetExecutingAssembly();
+            x.AddConsumers(assembly);
             
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -32,8 +34,6 @@ public static class MassTransitConfig
                 
                 cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                 cfg.PrefetchCount = 16;
-                
-                cfg.Message<PaymentProcessedEvent>(e => e.SetEntityName("payment-processed"));
                 
                 cfg.ConfigureEndpoints(context);
             });
