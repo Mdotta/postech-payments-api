@@ -1,9 +1,9 @@
 using Postech.Payments.Api.Application.DTOs;
 using Postech.Payments.Api.Domain.Entities;
 using Postech.Payments.Api.Domain.Enums;
-using Postech.Payments.Api.Domain.Events;
 using Postech.Payments.Api.Infrastructure.Messaging;
 using Postech.Payments.Api.Infrastructure.Repositories;
+using Postech.Shared.Contracts.Events;
 
 namespace Postech.Payments.Api.Application.Services;
 
@@ -72,21 +72,20 @@ public class PaymentService : IPaymentService
                     payment.Status);
 
                 _logger.Debug(
-                    "Preparando para publicar PaymentProcessedEvent | OrderId: {OrderId}",
+                    "Preparando para publicar OrderProcessedEvent | OrderId: {OrderId}",
                     payment.OrderId);
 
-                var paymentProcessedEvent = new PaymentProcessedEvent
+                var orderProcessedEvent = new OrderProcessedEvent()
                 {
                     OrderId = payment.OrderId,
-                    UserId = payment.UserId,
-                    GameId = payment.GameId,
-                    Status = payment.Status
+                    IsSuccessful = isSuccessful,
+                    FailureReason = "Failed due to payment processing error"
                 };
 
-                await _eventPublisher.PublishAsync(paymentProcessedEvent);
+                await _eventPublisher.PublishAsync(orderProcessedEvent);
 
                 _logger.Information(
-                    "PaymentProcessedEvent publicado com sucesso | OrderId: {OrderId} | Status: {Status}",
+                    "OrderProcessedEvent publicado com sucesso | OrderId: {OrderId} | Status: {Status}",
                     payment.OrderId,
                     payment.Status);
             }

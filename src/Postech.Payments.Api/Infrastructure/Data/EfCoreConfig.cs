@@ -22,7 +22,7 @@ public static class EfCoreConfig
         });
 
         services.AddScoped<IPaymentRepository, PaymentRepository>();
-
+        
         return services;
     }
 }

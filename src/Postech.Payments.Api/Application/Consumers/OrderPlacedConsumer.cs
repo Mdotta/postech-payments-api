@@ -1,27 +1,27 @@
 using MassTransit;
 using Postech.Payments.Api.Application.DTOs;
 using Postech.Payments.Api.Application.Services;
-using Postech.Payments.Api.Domain.Events;
+using Postech.Shared.Contracts.Events;
 
 namespace Postech.Payments.Api.Application.Consumers;
 
-public class OrderCreatedConsumer : IConsumer<OrderCreatedEvent>
+public class OrderPlacedConsumer : IConsumer<OrderPlacedEvent>
 {
     private readonly IPaymentService _paymentService;
     private readonly Serilog.ILogger _logger;
-
-    public OrderCreatedConsumer(IPaymentService paymentService)
+    
+    public OrderPlacedConsumer(IPaymentService paymentService)
     {
         _paymentService = paymentService;
-        _logger = Serilog.Log.ForContext<OrderCreatedConsumer>();
+        _logger = Serilog.Log.ForContext<OrderPlacedConsumer>();
     }
 
-    public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
+    public async Task Consume(ConsumeContext<OrderPlacedEvent> context)
     {
         var message = context.Message;
         
         // Configurar contexto de logging com correlationId
-        using (Serilog.Context.LogContext.PushProperty("CorrelationId", message.CorrelationId))
+        using (Serilog.Context.LogContext.PushProperty("CorrelationId", context.CorrelationId))
         using (Serilog.Context.LogContext.PushProperty("OrderId", message.OrderId))
         using (Serilog.Context.LogContext.PushProperty("UserId", message.UserId))
         using (Serilog.Context.LogContext.PushProperty("GameId", message.GameId))
@@ -33,13 +33,13 @@ public class OrderCreatedConsumer : IConsumer<OrderCreatedEvent>
                     message.OrderId,
                     message.UserId,
                     message.GameId,
-                    message.Price);
+                    message.TotalAmount);
 
                 var dto = new OrderCreatedDto(
                     message.OrderId,
                     message.UserId,
                     message.GameId,
-                    message.Price);
+                    message.TotalAmount);
 
                 await _paymentService.ProccessOrderAsync(dto);
 

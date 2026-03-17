@@ -1,8 +1,7 @@
 using System.Reflection;
 using MassTransit;
-using Postech.Payments.Api.Application.Consumers;
-using Postech.Payments.Api.Domain.Events;
 using Postech.Payments.Api.Infrastructure.Messaging;
+using Postech.Shared.Contracts.Events;
 
 namespace Postech.Payments.Api.Infrastructure.MassTransit;
 
@@ -34,6 +33,12 @@ public static class MassTransitConfig
                 
                 cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                 cfg.PrefetchCount = 16;
+                
+                cfg.Message<OrderPlacedEvent>(x => 
+                    x.SetEntityName("OrderPlacedEvent"));
+                
+                cfg.Message<OrderProcessedEvent>(x => 
+                    x.SetEntityName("OrderProcessedEvent"));
                 
                 cfg.ConfigureEndpoints(context);
             });
