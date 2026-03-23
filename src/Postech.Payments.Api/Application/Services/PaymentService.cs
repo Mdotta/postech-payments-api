@@ -88,6 +88,21 @@ public class PaymentService : IPaymentService
                     "OrderProcessedEvent publicado com sucesso | OrderId: {OrderId} | Status: {Status}",
                     payment.OrderId,
                     payment.Status);
+
+                var paymentProcessedEvent = new PaymentProcessedEvent
+                {
+                    OrderId = payment.OrderId,
+                    UserId = payment.UserId,
+                    GameId = payment.GameId,
+                    Status = MapToSharedPaymentStatus(payment.Status)
+                };
+
+                await _eventPublisher.PublishAsync(paymentProcessedEvent);
+
+                _logger.Information(
+                    "PaymentProcessedEvent publicado | OrderId: {OrderId} | Status: {Status}",
+                    payment.OrderId,
+                    paymentProcessedEvent.Status);
             }
         }
         catch (Exception ex)
@@ -100,5 +115,14 @@ public class PaymentService : IPaymentService
             throw;
         }
     }
+
+    private static PaymentProcessedStatus MapToSharedPaymentStatus(PaymentStatus status) => status switch
+    {
+        PaymentStatus.Pending => PaymentProcessedStatus.Pending,
+        PaymentStatus.Completed => PaymentProcessedStatus.Completed,
+        PaymentStatus.Failed => PaymentProcessedStatus.Failed,
+        PaymentStatus.Cancelled => PaymentProcessedStatus.Cancelled,
+        _ => PaymentProcessedStatus.Pending
+    };
 }
 
