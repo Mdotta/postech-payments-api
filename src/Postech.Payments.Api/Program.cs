@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .Enrich.WithProperty("Service", "Users.Api")
+    .Enrich.WithProperty("Service", "Payments.Api")
     .CreateLogger();
 
 builder.Host.UseSerilog((context, services, options) =>
@@ -26,8 +26,6 @@ builder.Host.UseSerilog((context, services, options) =>
 
 #endregion
 
-
-builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks();
 
@@ -78,11 +76,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 
