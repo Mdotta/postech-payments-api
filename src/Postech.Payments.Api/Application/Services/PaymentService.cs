@@ -89,20 +89,21 @@ public class PaymentService : IPaymentService
                     payment.OrderId,
                     payment.Status);
 
-                var paymentProcessedEvent = new PaymentProcessedEvent
+                var paymentProcessedEvent = new OrderProcessedEvent()
                 {
                     OrderId = payment.OrderId,
                     UserId = payment.UserId,
                     GameId = payment.GameId,
-                    Status = MapToSharedPaymentStatus(payment.Status)
+                    IsSuccessful = payment.Status == PaymentStatus.Completed,
+                    FailureReason = ReasonToFailure(payment.Status)
                 };
 
                 await _eventPublisher.PublishAsync(paymentProcessedEvent);
 
                 _logger.Information(
-                    "PaymentProcessedEvent publicado | OrderId: {OrderId} | Status: {Status}",
+                    "PaymentProcessedEvent publicado | OrderId: {OrderId} | IsSuccessful: {Status}",
                     payment.OrderId,
-                    paymentProcessedEvent.Status);
+                    paymentProcessedEvent.IsSuccessful);
             }
         }
         catch (Exception ex)
@@ -116,13 +117,20 @@ public class PaymentService : IPaymentService
         }
     }
 
-    private static PaymentProcessedStatus MapToSharedPaymentStatus(PaymentStatus status) => status switch
+    private string ReasonToFailure(PaymentStatus status)
     {
-        PaymentStatus.Pending => PaymentProcessedStatus.Pending,
-        PaymentStatus.Completed => PaymentProcessedStatus.Completed,
-        PaymentStatus.Failed => PaymentProcessedStatus.Failed,
-        PaymentStatus.Cancelled => PaymentProcessedStatus.Cancelled,
-        _ => PaymentProcessedStatus.Pending
-    };
+        switch (status)
+        {
+            case PaymentStatus.Completed:
+                break;
+            case PaymentStatus.Failed:
+                return "Failed due to payment processing error";
+            default:
+                return "Unknown payment status";
+            break;
+        }
+
+        return "";
+    }
 }
 

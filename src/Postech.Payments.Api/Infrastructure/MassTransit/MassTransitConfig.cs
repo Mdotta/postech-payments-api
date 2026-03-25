@@ -40,9 +40,6 @@ public static class MassTransitConfig
                 cfg.Message<OrderProcessedEvent>(x => 
                     x.SetEntityName("OrderProcessedEvent"));
 
-                cfg.Message<PaymentProcessedEvent>(x =>
-                    x.SetEntityName("PaymentProcessedEvent"));
-
                 cfg.ConfigureEndpoints(context);
             });
         });

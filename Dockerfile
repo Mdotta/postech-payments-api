@@ -1,31 +1,24 @@
-# Use the official .NET 10 SDK image as the build environment
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS base
-WORKDIR /app
 
-# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS base
+WORKDIR /repo
+
 FROM base AS build
-COPY src/ ./src/
-WORKDIR /app/src/Postech.Payments.Api
+COPY src ./src
+COPY Postech.Shared.dll ./Postech.Shared.dll
+WORKDIR /repo/src/Postech.Payments.Api
 RUN dotnet restore Postech.Payments.Api.csproj
 RUN dotnet build Postech.Payments.Api.csproj -c Release -o /app/build
 
-# Test stage
 FROM build AS test
-WORKDIR /app/src/Postech.Payments.Api.Tests
-RUN dotnet test Postech.Payments.Api.Tests.csproj --no-build --verbosity normal
+WORKDIR /repo/src/Postech.Payments.Api.Tests
+RUN dotnet test Postech.Payments.Api.Tests.csproj -c Release --verbosity normal
 
-# Publish stage
 FROM build AS publish
-WORKDIR /app/src/Postech.Payments.Api
-RUN dotnet publish Postech.Payments.Api.csproj -c Release -o /app/publish --no-restore
+WORKDIR /repo/src/Postech.Payments.Api
+RUN dotnet publish Postech.Payments.Api.csproj -c Release -o /app/publish
 
-# Final stage: runtime-only image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-# Expose port (change if needed)
 EXPOSE 80
-
-# Start the application
 ENTRYPOINT ["dotnet", "Postech.Payments.Api.dll"]
