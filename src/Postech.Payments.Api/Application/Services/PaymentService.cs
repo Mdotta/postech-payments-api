@@ -78,32 +78,18 @@ public class PaymentService : IPaymentService
                 var orderProcessedEvent = new OrderProcessedEvent()
                 {
                     OrderId = payment.OrderId,
-                    IsSuccessful = isSuccessful,
-                    FailureReason = "Failed due to payment processing error"
-                };
-
-                await _eventPublisher.PublishAsync(orderProcessedEvent);
-
-                _logger.Information(
-                    "OrderProcessedEvent publicado com sucesso | OrderId: {OrderId} | Status: {Status}",
-                    payment.OrderId,
-                    payment.Status);
-
-                var paymentProcessedEvent = new OrderProcessedEvent()
-                {
-                    OrderId = payment.OrderId,
                     UserId = payment.UserId,
                     GameId = payment.GameId,
                     IsSuccessful = payment.Status == PaymentStatus.Completed,
                     FailureReason = ReasonToFailure(payment.Status)
                 };
 
-                await _eventPublisher.PublishAsync(paymentProcessedEvent);
+                await _eventPublisher.PublishAsync(orderProcessedEvent);
 
                 _logger.Information(
-                    "PaymentProcessedEvent publicado | OrderId: {OrderId} | IsSuccessful: {Status}",
+                    "OrderProcessedEvent publicado | OrderId: {OrderId} | IsSuccessful: {Status}",
                     payment.OrderId,
-                    paymentProcessedEvent.IsSuccessful);
+                    orderProcessedEvent.IsSuccessful);
             }
         }
         catch (Exception ex)
