@@ -1,11 +1,7 @@
 using Postech.Payments.Api.Extensions;
-using Postech.Payments.Api.Infrastructure.Data;
-using Postech.Payments.Api.Infrastructure.MassTransit;
-using Serilog;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using Postech.Payments.Api.Infrastructure.Data;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +25,8 @@ builder.Host.UseSerilog((context, services, options) =>
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddMassTransitServices(builder.Configuration);
-builder.Services.AddEfCoreDatabase(builder.Configuration);
 builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
@@ -63,14 +58,12 @@ using (var scope = app.Services.CreateScope())
                     throw;
                 }
 
-                // simple exponential backoff
                 Thread.Sleep(TimeSpan.FromSeconds(5 * attempt));
             }
         }
     }
     catch (Exception ex)
     {
-        // If migration fails at startup, log and rethrow to avoid running in a bad state
         Log.Fatal(ex, "Database migrations failed on startup");
         throw;
     }
