@@ -2,6 +2,7 @@ using Postech.Payments.Api.Application.DTOs;
 using Postech.Payments.Api.Domain.Entities;
 using Postech.Payments.Api.Domain.Enums;
 using Postech.Payments.Api.Infrastructure.Messaging;
+using Postech.Payments.Api.Infrastructure.Metrics;
 using Postech.Payments.Api.Infrastructure.Repositories;
 using Postech.Shared.Contracts.Events;
 
@@ -54,6 +55,8 @@ public class PaymentService : IPaymentService
                 PaymentMethod = "Pix",
                 Message = isSuccessful ? "Payment processed successfully" : "Payment processing failed"
             };
+
+            PaymentsMetrics.PaymentsProcessed.WithLabels(isSuccessful ? "approved" : "rejected").Inc();
 
             _logger.Debug(
                 "Salvando pagamento no banco | OrderId: {OrderId} | Status: {Status}",

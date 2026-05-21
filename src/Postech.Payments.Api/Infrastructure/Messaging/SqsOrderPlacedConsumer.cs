@@ -3,6 +3,7 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Postech.Payments.Api.Application.DTOs;
 using Postech.Payments.Api.Application.Services;
+using Postech.Payments.Api.Infrastructure.Metrics;
 using Postech.Shared.Contracts.Events;
 
 namespace Postech.Payments.Api.Infrastructure.Messaging;
@@ -98,6 +99,7 @@ public class SqsOrderPlacedConsumer : BackgroundService
                     orderEvent.TotalAmount);
 
                 await paymentService.ProccessOrderAsync(dto);
+                PaymentsMetrics.OrdersReceived.Inc();
             }
         }
     }
