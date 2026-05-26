@@ -23,3 +23,10 @@ appsettings.*.json
 
 ## Project
 logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Private keys
+*.pem
