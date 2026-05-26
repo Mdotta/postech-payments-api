@@ -74,25 +74,7 @@ public class PaymentService : IPaymentService
                     payment.OrderId,
                     payment.Status);
 
-                _logger.Debug(
-                    "Preparando para publicar OrderProcessedEvent | OrderId: {OrderId}",
-                    payment.OrderId);
-
                 var orderProcessedEvent = new OrderProcessedEvent()
-                {
-                    OrderId = payment.OrderId,
-                    IsSuccessful = isSuccessful,
-                    FailureReason = "Failed due to payment processing error"
-                };
-
-                await _eventPublisher.PublishAsync(orderProcessedEvent);
-
-                _logger.Information(
-                    "OrderProcessedEvent publicado com sucesso | OrderId: {OrderId} | Status: {Status}",
-                    payment.OrderId,
-                    payment.Status);
-
-                var paymentProcessedEvent = new OrderProcessedEvent()
                 {
                     OrderId = payment.OrderId,
                     UserId = payment.UserId,
@@ -101,12 +83,12 @@ public class PaymentService : IPaymentService
                     FailureReason = ReasonToFailure(payment.Status)
                 };
 
-                await _eventPublisher.PublishAsync(paymentProcessedEvent);
+                await _eventPublisher.PublishAsync(orderProcessedEvent);
 
                 _logger.Information(
-                    "PaymentProcessedEvent publicado | OrderId: {OrderId} | IsSuccessful: {Status}",
+                    "OrderProcessedEvent publicado | OrderId: {OrderId} | IsSuccessful: {Status}",
                     payment.OrderId,
-                    paymentProcessedEvent.IsSuccessful);
+                    orderProcessedEvent.IsSuccessful);
             }
         }
         catch (Exception ex)
